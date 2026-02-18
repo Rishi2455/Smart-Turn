@@ -92,7 +92,7 @@ class SemanticAnalyzer:
         logits = outputs.logits
         probs = torch.softmax(logits, dim=1)
 
-        confidence = probs[0][1].item()
         predicted_class_id = logits.argmax().item()
+        confidence = probs[0][predicted_class_id].item()
 
         return predicted_class_id == 1, confidence

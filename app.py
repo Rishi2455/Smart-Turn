@@ -271,19 +271,8 @@ def render_result_card(status: str, confidence: float, transcript: str, reason: 
         <p style="margin-top: 0.8rem; font-size: 0.85rem; color: #999;">
             <strong>Reason:</strong> {reason}
         </p>
+    </div>
     """
-
-    if vad_info:
-        html += f"""
-        <hr style="border-color: rgba(255,255,255,0.1); margin: 0.8rem 0;">
-        <p style="font-size: 0.85rem; color: #999;">
-            <strong>VAD:</strong> Speech ratio: {vad_info['speech_ratio']:.1%} |
-            Max prob: {vad_info['max_prob']:.2f} |
-            RMS: {vad_info['rms']:.4f}
-        </p>
-        """
-
-    html += "</div>"
     st.markdown(html, unsafe_allow_html=True)
 
 
