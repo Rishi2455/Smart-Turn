@@ -12,6 +12,6 @@ faster-whisper
 pandas
 datasets
 scikit-learn
-tqdm
+tqdm>=4.66.0
 groq
 python-dotenv
