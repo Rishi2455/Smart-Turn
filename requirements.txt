@@ -1,0 +1,37 @@
+<<<<<<< HEAD
+streamlit
+fastapi
+uvicorn
+transformers
+torch
+websockets
+jinja2
+numpy
+scipy
+silero-vad
+faster-whisper
+pandas
+datasets
+scikit-learn
+tqdm
+groq
+python-dotenv
+=======
+streamlit
+fastapi
+uvicorn
+transformers
+torch
+websockets
+jinja2
+numpy
+scipy
+silero-vad
+faster-whisper
+pandas
+datasets
+scikit-learn
+tqdm
+groq
+python-dotenv
+>>>>>>> 73d9573 (safetensor uploaded)
