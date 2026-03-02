@@ -340,15 +340,23 @@ class EOUModelEngine:
                     self._executor,
                     lambda: AutoTokenizer.from_pretrained(model_dir)
                 )
-                # Try ONNX first
-                onnx_path = os.path.join(model_dir, 'eou_model.onnx')
+                # Try ONNX first (prefer quantized)
+                onnx_quantized_path = os.path.join(model_dir, 'eou_model_quantized.onnx')
+                onnx_original_path = os.path.join(model_dir, 'eou_model.onnx')
+                
+                onnx_path = onnx_quantized_path if os.path.exists(onnx_quantized_path) else onnx_original_path
+                
                 if ONNX_AVAILABLE and os.path.exists(onnx_path):
                     self.backend = "onnx"
+                    if onnx_path == onnx_quantized_path:
+                        logger.info("✅ Loading INT8 Quantized ONNX model (ultra fast)")
+                    else:
+                        logger.info("✅ Loading Original ONNX model (fast path)")
+                        
                     self.onnx_session = await loop.run_in_executor(
                         self._executor,
                         lambda: self._create_onnx_session(onnx_path)
                     )
-                    logger.info("✅ Loaded ONNX model (fast path)")
 
                 elif TORCH_AVAILABLE:
                     self.backend = "pytorch"
