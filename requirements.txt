@@ -1,0 +1,14 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+jinja2==3.1.4
+python-multipart==0.0.9
+aiofiles==24.1.0
+websockets==13.0
+torch>=2.0.0
+transformers>=4.40.0
+sentencepiece
+protobuf
+pydantic>=2.0
+onnxruntime>=1.17.0
+python-dotenv
+deepgram-sdk<4.0.0

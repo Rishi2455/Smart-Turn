@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EOU Detector — End of Utterance Detection</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">🎯</span>
+                <h1>EOU Detector</h1>
+                <span class="badge">DeBERTa v3</span>
+            </div>
+            <div class="status-bar">
+                <div id="modelStatus" class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Checking...</span>
+                </div>
+                <div id="deviceInfo" class="device-info"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Mode Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="single">
+                💬 Single Prediction
+            </button>
+            <button class="tab" data-tab="realtime">
+                ⚡ Real-time (WebSocket)
+            </button>
+            <button class="tab" data-tab="batch">
+                📋 Batch Testing
+            </button>
+            <button class="tab" data-tab="settings">
+                ⚙️ Settings
+            </button>
+        </div>
+
+        <!-- ==================== SINGLE PREDICTION ==================== -->
+        <div id="tab-single" class="tab-content active">
+            <div class="card">
+                <h2>Single Utterance Prediction</h2>
+                <p class="subtitle">Enter text to check if it's a complete or incomplete utterance</p>
+
+                <div class="input-group">
+                    <label for="textInput">Utterance to Analyze</label>
+                    <textarea id="textInput" placeholder="e.g. I would like to book a" rows="3" autofocus></textarea>
+                </div>
+
+                <button id="predictBtn" class="btn btn-primary" onclick="predictSingle()">
+                    <span class="btn-icon">🔍</span>
+                    Analyze Utterance
+                </button>
+            </div>
+
+            <!-- Result Card -->
+            <div id="resultCard" class="card result-card hidden">
+                <div class="result-header">
+                    <div id="resultBadge" class="result-badge"></div>
+                    <div id="inferenceTime" class="inference-time"></div>
+                </div>
+
+                <div class="probability-bars">
+                    <div class="prob-item">
+                        <div class="prob-label">
+                            <span>✅ Complete</span>
+                            <span id="completeProb">0%</span>
+                        </div>
+                        <div class="prob-bar">
+                            <div id="completeBar" class="prob-fill complete"></div>
+                        </div>
+                    </div>
+                    <div class="prob-item">
+                        <div class="prob-label">
+                            <span>⏳ Incomplete</span>
+                            <span id="incompleteProb">0%</span>
+                        </div>
+                        <div class="prob-bar">
+                            <div id="incompleteBar" class="prob-fill incomplete"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="threshold-line">
+                    <span>Threshold: </span>
+                    <span id="thresholdValue">0.50</span>
+                </div>
+
+                <!-- Feature Analysis -->
+                <details class="features-panel">
+                    <summary>🔬 Feature Analysis</summary>
+                    <div id="featureGrid" class="feature-grid"></div>
+                </details>
+            </div>
+
+            <!-- Audio Testing -->
+            <div class="card">
+                <h3>🎙️ Audio Testing (Deepgram ASR)</h3>
+                <p class="subtitle">Upload an audio file or record live from your microphone</p>
+
+                <div class="audio-controls">
+                    <!-- Upload File -->
+                    <div class="audio-upload">
+                        <label for="audioFile" class="btn btn-secondary">
+                            📁 Upload Audio File
+                        </label>
+                        <input type="file" id="audioFile" accept="audio/*" style="display: none;"
+                            onchange="handleAudioUpload(event)">
+                        <span id="fileName" class="file-name">No file selected</span>
+                    </div>
+
+                    <!-- Live Record -->
+                    <div class="audio-record">
+                        <button id="recordBtn" class="btn btn-primary" onclick="toggleRecording()">
+                            <span class="btn-icon">🎤</span> Start Recording
+                        </button>
+                        <span id="recordingStatus" class="recording-status"></span>
+                    </div>
+                </div>
+
+                <!-- Transcription Result -->
+                <div id="transcriptionBox" class="transcription-box hidden">
+                    <h4>Transcription</h4>
+                    <p id="transcriptionText"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== REAL-TIME TAB ==================== -->
+        <div id="tab-realtime" class="tab-content">
+            <div class="card">
+                <h2>⚡ Real-time Detection</h2>
+                <p class="subtitle">Type and see predictions update instantly via WebSocket</p>
+
+                <div class="realtime-container">
+                    <div class="input-group">
+                        <label>Type your utterance below ⬇️</label>
+                        <div class="realtime-input-wrapper">
+                            <textarea id="rtTextInput" placeholder="Start typing..." rows="3"></textarea>
+                            <div id="rtIndicator" class="rt-indicator">
+                                <div class="rt-dot"></div>
+                                <span class="rt-label">Waiting...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="rtResult" class="rt-result">
+                        <div class="rt-confidence">
+                            <div id="rtConfBar" class="rt-conf-bar"></div>
+                        </div>
+                        <div id="rtDetails" class="rt-details"></div>
+                    </div>
+
+                    <div id="wsStatus" class="ws-status">
+                        <span class="ws-dot disconnected"></span>
+                        WebSocket: Disconnected
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== BATCH TAB ==================== -->
+        <div id="tab-batch" class="tab-content">
+            <div class="card">
+                <h2>📋 Batch Testing</h2>
+                <p class="subtitle">Test multiple utterances at once (one per line)</p>
+
+                <div class="input-group">
+                    <label for="batchInput">Enter utterances (one per line)</label>
+                    <textarea id="batchInput"
+                        placeholder="I want to&#10;Can you help me with this?&#10;The thing is that&#10;Thank you for your help.&#10;Well, I was thinking about&#10;Sure, sounds good."
+                        rows="8"></textarea>
+                </div>
+
+                <button class="btn btn-primary" onclick="predictBatch()">
+                    <span class="btn-icon">🚀</span>
+                    Run Batch Analysis
+                </button>
+
+                <div id="batchResults" class="batch-results hidden">
+                    <h3>Results</h3>
+                    <div class="batch-stats" id="batchStats"></div>
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Text</th>
+                                <th>Result</th>
+                                <th>Confidence</th>
+                                <th>P(Complete)</th>
+                                <th>Time (ms)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="batchTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SETTINGS TAB ==================== -->
+        <div id="tab-settings" class="tab-content">
+            <div class="card">
+                <h2>⚙️ Settings</h2>
+
+                <div class="settings-section">
+                    <h3>Classification Threshold</h3>
+                    <p class="subtitle">
+                        Adjust the threshold for classifying utterances as complete.
+                        Higher = more conservative (fewer false completes).
+                    </p>
+                    <div class="threshold-control">
+                        <input type="range" id="thresholdSlider" min="0" max="100" value="50" class="slider">
+                        <span id="thresholdDisplay" class="threshold-display">0.50</span>
+                        <button class="btn btn-sm" onclick="updateThreshold()">Apply</button>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Model Information</h3>
+                    <div id="modelInfo" class="model-info">
+                        <p>Loading model info...</p>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Load Different Model</h3>
+                    <div class="input-group">
+                        <label for="modelPathInput">Model Directory Path</label>
+                        <input type="text" id="modelPathInput" placeholder="/path/to/model_files">
+                    </div>
+                    <button class="btn btn-secondary" onclick="loadNewModel()">
+                        📂 Load Model
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>EOU Detector v1.0 | DistilBERT Fine-tuned | Deepgram API | FastAPI + WebSocket</p>
+    </footer>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

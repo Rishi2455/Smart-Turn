@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: smart-turn
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: EOU_MODEL_DIR
+        value: ./model
+      - key: DEEPGRAM_API_KEY
+        sync: false
